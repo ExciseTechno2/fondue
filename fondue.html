@@ -135,6 +135,23 @@
             }
         }
 
+        function sendMsg(msg) {
+            liff.sendMessages([
+                {
+                    type: "text",
+                    text: msg,
+                },
+            ])
+                .then(() => {
+                    console.log("message sent");
+                    liff.closeWindow();
+                })
+                .catch((err) => {
+                    console.log("error", err);
+                    liff.closeWindow();
+                });
+        }
+
         async function sendrequest() {
             let url = apiURL + '?fn=sendrequest';
             let detail = document.getElementById('detail').value;
@@ -159,8 +176,6 @@
                     "rawLog": rawLog
                 };
 
-                console.log(raw);
-
                 const requestOptions = {
                     method: 'POST',
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -182,6 +197,7 @@
                             rawLog = '';
                             document.getElementById('btn1').style.display = 'inline-block';
                             document.getElementById('btn2').style.display = 'none';
+                            sendMsg(result.data);
                         });
                     } else {
                         console.log(result.data);
@@ -208,10 +224,43 @@
             }
         }
 
-        document.getElementById('btn1').style.display = 'inline-block';
-        document.getElementById('btn2').style.display = 'none';
-    </script>
+        function setLineUser() {
+            liff.getProfile()
+                .then((profile) => {
+                    userId = profile.userId;
+                    pictureUrl = profile.pictureUrl;
+                    displayName = profile.displayName;
+                })
+                .catch((err) => {
+                    console.log("error", err);
+                    Swal.fire({
+                        title: "Failed",
+                        text: "การเชื่อมต่อผิดพลาด!",
+                        icon: "error"
+                    });
+                });
+        }
 
+        liff.init({ liffId: "1660727236-vNdxF5OK" }, () => {
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            } else {
+                setLineUser();
+            }
+            document.getElementById('btn1').style.display = 'inline-block';
+            document.getElementById('btn2').style.display = 'none';
+        }, (err) => {
+            Swal.fire({
+                title: "Failed",
+                text: "การเชื่อมต่อผิดพลาด!",
+                icon: "error"
+            }).then(() => {
+                document.getElementById('btn1').style.display = 'inline-block';
+                document.getElementById('btn2').style.display = 'none';
+            });
+            console.log(err.code, err.message);
+        });
+    </script>
 </body>
 
 </html>
